@@ -14,10 +14,6 @@ public sealed class AuthAttemptConfig : IEntityTypeConfiguration<AuthAttempt>
             .HasMaxLength(200)
             .IsRequired();
             
-        builder.Property(e => e.NormalizedUsername)
-            .HasMaxLength(200)
-            .IsRequired();
-            
         builder.Property(e => e.ClientIp)
             .HasMaxLength(100);
             

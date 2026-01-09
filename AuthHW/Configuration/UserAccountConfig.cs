@@ -13,9 +13,13 @@ public sealed class UserAccountConfig : IEntityTypeConfiguration<UserAccount>
         builder.Property(e => e.Username)
             .HasMaxLength(200)
             .IsRequired();
-            
-        builder.Property(e => e.NormalizedUsername)
-            .HasMaxLength(200)
+        
+        builder.Property(e => e.Email)
+            .HasMaxLength(320)
+            .IsRequired(); 
+        
+        builder.Property(e => e.Tag)
+            .HasMaxLength(64)
             .IsRequired();
             
         builder.Property(e => e.PasswordHash)
@@ -24,7 +28,7 @@ public sealed class UserAccountConfig : IEntityTypeConfiguration<UserAccount>
         builder.Property(e => e.CreatedAt)
             .HasDefaultValueSql("now()");
             
-        builder.HasIndex(e => e.NormalizedUsername)
+        builder.HasIndex(e => e.Tag)
             .IsUnique();
     }
 }

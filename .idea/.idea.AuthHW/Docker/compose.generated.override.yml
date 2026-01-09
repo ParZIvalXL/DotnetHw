@@ -1,0 +1,23 @@
+# This is a generated file. Not intended for manual editing.
+version: "3.8"
+services:
+  authhw:
+    build:
+      context: "C:\\Users\\Рузиль\\Desktop\\Программирование\\ORIS\\DotnetHw"
+      dockerfile: "AuthHW/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/AuthHW.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_STATICWEBASSETS: "/app/bin/Debug/net9.0/AuthHW.staticwebassets.runtime.CT.json"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "authhw:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\Рузиль\\Desktop\\Программирование\\ORIS\\DotnetHw\\AuthHW:/app:rw"
+    - "C:\\Users\\Рузиль\\Desktop\\Программирование\\ORIS\\DotnetHw:/src:rw"
+    - "C:\\Users\\Рузиль\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"

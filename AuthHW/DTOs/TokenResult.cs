@@ -1,3 +1,5 @@
+using AuthHW.Entities;
+
 namespace AuthHW.DTOs;
 
 public sealed class TokenResult
@@ -6,4 +8,5 @@ public sealed class TokenResult
     public string? Message { get; init; }
     public string? Token { get; init; }
     public int? ExpirationMinutes { get; init; }
+    public UserAccount? User { get; init; }
 }

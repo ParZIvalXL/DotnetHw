@@ -16,16 +16,10 @@ public sealed class ApiAuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] CredentialsRequest request, CancellationToken ct)
+    public async Task<IActionResult> Register([FromBody] RegisterCredentialsRequest request, CancellationToken ct)
     {
-        var result = await _authService.RegisterUserAsync(request.Username, request.Password, ct);
+        var result = await _authService.RegisterUserAsync(request.Username, request.Tag, request.Email, request.Password, ct);
         
-        if (!result.Success)
-        {
-            return result.Message == "Username already taken" 
-                ? Conflict(result.Message) 
-                : BadRequest(result.Message);
-        }
 
         return Created(string.Empty, new { Message = result.Message });
     }
@@ -39,7 +33,7 @@ public sealed class ApiAuthController : ControllerBase
         var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
 
         var result = await _authService.AuthenticateUserAsync(
-            request.Username, request.Password, clientIp, userAgent, ct);
+            request.TagOrEmail, request.Password, clientIp, userAgent, ct);
 
         if (!result.Success)
         {
@@ -49,7 +43,8 @@ public sealed class ApiAuthController : ControllerBase
         return Ok(new AuthenticationResult
         {
             AccessToken = result.Token!,
-            ExpiresInMinutes = result.ExpirationMinutes!.Value
+            ExpiresInMinutes = result.ExpirationMinutes!.Value,
+            User = result.User
         });
     }
 }

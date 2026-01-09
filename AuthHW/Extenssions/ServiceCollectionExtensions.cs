@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using AuthHW.Data;
 using AuthHW.Entities;
@@ -51,7 +52,23 @@ public static class ServiceCollectionExtensions
                     ValidIssuer = tokenSettings.Issuer,
                     ValidAudience = tokenSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(tokenSettings.SecretKey))
+                        Encoding.UTF8.GetBytes(tokenSettings.SecretKey)),
+                    
+                    NameClaimType = ClaimTypes.NameIdentifier
+                };
+                
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine("JWT Failed: " + context.Exception.Message);
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.WriteLine("JWT Validated for user: " + context.Principal.Identity.Name);
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
@@ -63,7 +80,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IPasswordHasher<UserAccount>, PasswordHasher<UserAccount>>();
         services.AddScoped<ITokenGenerator, TokenGenerator>();
+        
         services.AddScoped<AuthService>();
+        services.AddScoped<UsersService>();
+        services.AddScoped<ChatService>();
+        
         return services;
     }
 }

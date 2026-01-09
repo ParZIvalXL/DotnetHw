@@ -20,6 +20,8 @@ public sealed class GrpcAuthHandler : Auth.AuthBase
     {
         var result = await _authService.RegisterUserAsync(
             request.Login, 
+            request.Login,
+            null,
             request.Password, 
             context.CancellationToken);
 

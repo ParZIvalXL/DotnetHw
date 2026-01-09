@@ -7,12 +7,12 @@ namespace AuthHW.Services;
 
 public sealed class TokenGenerator : ITokenGenerator
 {
-    public string CreateToken(string username, string issuer, string audience, string secretKey, int validityMinutes)
+    public string CreateToken(string username, int userId, string issuer, string audience, string secretKey, int validityMinutes)
     {
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new Claim(JwtRegisteredClaimNames.UniqueName, username)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));

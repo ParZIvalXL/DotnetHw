@@ -27,30 +27,49 @@ public sealed class AuthService
         _tokenSettings = tokenSettings.Value;
     }
 
-    public async Task<TokenResult> RegisterUserAsync(string username, string password, CancellationToken ct)
+    public async Task<TokenResult> RegisterUserAsync(string username, string tag, string email, string password, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(tag) || string.IsNullOrWhiteSpace(password))
+        {
+            return new TokenResult { Success = false, Message = "Username and password required" };
+        }
+        
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
             return new TokenResult { Success = false, Message = "Username and password required" };
         }
 
-        var normalizedUsername = username.ToUpperInvariant();
+        var normalizedUsername = tag.ToUpperInvariant();
         var userExists = await _context.UserAccounts
-            .AnyAsync(u => u.NormalizedUsername == normalizedUsername, ct);
+            .AnyAsync(u => u.Tag == normalizedUsername || u.Email == email, ct);
 
         if (userExists)
         {
-            return new TokenResult { Success = false, Message = "Username already taken" };
+            throw new ArgumentException("Такой пользователь уже существует");
         }
 
         var newUser = new UserAccount
         {
             Username = username,
-            NormalizedUsername = normalizedUsername,
+            Email = email,
+            Tag = tag,
             PasswordHash = _passwordHasher.HashPassword(null!, password)
         };
 
+        var newProfile = new UserProfile()
+        {
+            DisplayName = username,
+            UserId = newUser.Id,
+            User = newUser,
+            UpdatedAt = DateTime.UtcNow,
+            LastSeenAt = DateTime.UtcNow
+            
+        };
+        
         _context.UserAccounts.Add(newUser);
+        _context.UserProfiles.Add(newProfile);
+        
+        
         await _context.SaveChangesAsync(ct);
 
         return new TokenResult { Success = true, Message = "Registration successful" };
@@ -68,16 +87,15 @@ public sealed class AuthService
             return new TokenResult { Success = false, Message = "Credentials required" };
         }
 
-        var normalizedUsername = username.ToUpperInvariant();
         var user = await _context.UserAccounts
-            .FirstOrDefaultAsync(u => u.NormalizedUsername == normalizedUsername, ct);
+            .FirstOrDefaultAsync(u => u.Username == username || u.Email == username, ct);
 
         var isValid = user != null && 
             _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) 
             != PasswordVerificationResult.Failed;
 
         await LogAuthenticationAttemptAsync(
-            username, normalizedUsername, isValid, clientIp, userAgent, ct);
+            username, isValid, clientIp, userAgent, ct);
 
         if (!isValid || user == null)
         {
@@ -86,6 +104,7 @@ public sealed class AuthService
 
         var token = _tokenGenerator.CreateToken(
             user.Username,
+            user.Id,
             _tokenSettings.Issuer,
             _tokenSettings.Audience,
             _tokenSettings.SecretKey,
@@ -96,13 +115,13 @@ public sealed class AuthService
             Success = true,
             Message = "Authentication successful",
             Token = token,
-            ExpirationMinutes = _tokenSettings.TokenValidityMinutes
+            ExpirationMinutes = _tokenSettings.TokenValidityMinutes,
+            User = user
         };
     }
 
     private async Task LogAuthenticationAttemptAsync(
         string username,
-        string normalizedUsername,
         bool wasSuccessful,
         string? clientIp,
         string? userAgent,
@@ -111,7 +130,6 @@ public sealed class AuthService
         var attempt = new AuthAttempt
         {
             Username = username,
-            NormalizedUsername = normalizedUsername,
             WasSuccessful = wasSuccessful,
             ClientIp = clientIp,
             UserAgent = userAgent

@@ -4,6 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +21,7 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="Minio" Version="7.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
       <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.0.1" />
@@ -28,5 +30,13 @@
     </ItemGroup>
     <ItemGroup>
         <Protobuf Include="Protos\auth.proto" GrpcServices="Server" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
     </ItemGroup>
 </Project>
